@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Text;
 using System.Windows;
 
@@ -11,11 +10,25 @@ namespace MySqlTableToModel
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        Tables _sqlConnectBase;
         public MainWindow()
         {
             InitializeComponent();
 
             this.DataContext = this;
+
+            Init();
+        }
+
+        private void Init()
+        {
+            var iniFile = new IniFile("../../../../Config/db.ini");
+            var ip = iniFile.Read("ip", "database");
+            var user = iniFile.Read("user", "database");
+            var password = iniFile.Read("password", "database");
+            var table = iniFile.Read("table", "database");
+
+            _sqlConnectBase = new Tables(ip, user, password, table);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -42,33 +55,23 @@ namespace MySqlTableToModel
             }
         }
 
-
         private void Generate_Click(object sender, RoutedEventArgs e)
         {
-            string startupPath = System.IO.Directory.GetCurrentDirectory();
-            var iniFile = new IniFile("../../../../Config/db.ini");
-            var ip = iniFile.Read("ip", "database");
-            var user = iniFile.Read("user", "database");
-            var password = iniFile.Read("password", "database");
-            var table = iniFile.Read("table", "database");
-
-            Tables sqlConnectBase = new Tables(ip, user, password, table);
-            sqlConnectBase.GetTableInformation(TableName, out var informations);
+            _sqlConnectBase.GetTableInformation(TableName, out var informations);
             ConvertToCode(informations);
         }
 
+
         private void ConvertToCode(List<InformationSchema> informations)
         {
-            string className = TableName.Replace("_", " ");
-            className = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(className);
-            className = className.Replace(" ", "");
+            string className = TextFormat.SnakeCaseToPascalCase(TableName);
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("using System");
             sb.AppendLine();
             sb.AppendLine($"namespace NAMESPACE");
             sb.AppendLine("{");
-            sb.AppendLine($"    class {TableName}");
+            sb.AppendLine($"    class {className}");
             sb.AppendLine("    {");
             foreach (var information in informations)
             {
@@ -77,10 +80,16 @@ namespace MySqlTableToModel
 
                 if (type.Contains("int"))
                     columnType = "int";
+                else if (type.Contains("var(1)") || type.Contains("char(1)"))
+                    columnType = "char";
                 else if (type.Contains("var") || type.Contains("text"))
                     columnType = "string";
                 else if (type.Contains("datetime"))
                     columnType = "DateTime";
+                else if (type.Contains("double"))
+                    columnType = "double";
+                else if (type.Contains("float"))
+                    columnType = "float";
 
                 sb.AppendLine($"      public {columnType} {information.COLUMN_NAME} {{ get; set;}}");
             }
@@ -93,9 +102,7 @@ namespace MySqlTableToModel
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            string fileName = TableName.Replace("_", " ");
-            fileName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(fileName);
-            fileName = fileName.Replace(" ", "");
+            string fileName = TextFormat.SnakeCaseToPascalCase(TableName);
             System.IO.File.WriteAllText($"{fileName}.cs", Code);
         }
 
