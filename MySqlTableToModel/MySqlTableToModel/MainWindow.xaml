@@ -6,7 +6,21 @@
         xmlns:local="clr-namespace:MySqlTableToModel"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+    <StackPanel Orientation="Vertical">
+        <TextBox   TextWrapping="Wrap" 
+                   AcceptsReturn="True"
+                   VerticalScrollBarVisibility="Auto"
+                   Height="350"
+                   Text="{Binding Code}"/>
+        <StackPanel Orientation="Horizontal" >
+            <TextBlock Text="TableName："/>
+            <TextBox Width="100" Text="{Binding TableName}"/>
+
+            <Button Content="Generate"
+                    Click="Generate_Click"/>
+
+            <Button Content="Save"
+                    Click="Save_Click"/>
+        </StackPanel>
+    </StackPanel>
 </Window>
