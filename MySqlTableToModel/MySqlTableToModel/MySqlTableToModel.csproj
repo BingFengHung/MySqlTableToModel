@@ -56,8 +56,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="InformationSchema.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="SqlConnectionBase.cs" />
+    <Compile Include="Tables.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

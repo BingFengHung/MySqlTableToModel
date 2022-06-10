@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows;
 
 namespace MySqlTableToModel
 {
@@ -22,6 +10,16 @@ namespace MySqlTableToModel
         public MainWindow()
         {
             InitializeComponent();
+
+            string startupPath = System.IO.Directory.GetCurrentDirectory();
+            var iniFile = new IniFile("../../../../Config/db.ini");
+            var ip = iniFile.Read("ip", "database");
+            var user = iniFile.Read("user", "database");
+            var password = iniFile.Read("password", "database");
+            var table = iniFile.Read("table", "database");
+
+            Tables sqlConnectBase = new Tables(ip, user, password, table);
+            sqlConnectBase.GetTableInformation("user_nc_data", out var informations);
         }
     }
 }

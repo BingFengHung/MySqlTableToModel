@@ -116,6 +116,10 @@ namespace MySqlTableToModel
                                     {
                                         if (dr.GetFieldType(c) == typeof(DateTime))
                                             dataTable.Rows[dataTable.Rows.Count - 1][c] = Convert.ToDateTime(dr[dr.GetName(c)]).ToString("yyyy-MM-dd HH:mm:ss");
+                                        else if (dr.GetFieldType(c) == typeof(DBNull))
+                                        {
+                                            dataTable.Rows[dataTable.Rows.Count - 1][c] = "DBNull";
+                                        }
                                         else
                                             dataTable.Rows[dataTable.Rows.Count - 1][c] = Convert.ToString(dr[dr.GetName(c)]);
                                     }
@@ -126,8 +130,9 @@ namespace MySqlTableToModel
                     return true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
             }
 
             return false;
