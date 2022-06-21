@@ -16,14 +16,44 @@
         </Style>
     </Window.Resources>
     <StackPanel Orientation="Vertical">
-        <TextBox   TextWrapping="Wrap" 
-                   AcceptsReturn="True"
-                   VerticalScrollBarVisibility="Auto"
-                   Height="350"
-                   Text="{Binding Code}"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer VerticalScrollBarVisibility="Visible" Height="350">
+                <ItemsControl ItemsSource="{Binding TableNames}" >
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding}"
+                                    Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.TableSelect}"
+                                    CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <Grid Grid.Column="1">
+                <TextBox Grid.Column="1" TextWrapping="Wrap" 
+                     AcceptsReturn="True" 
+                     VerticalScrollBarVisibility="Auto" 
+                     Height="350" 
+                     Text="{Binding Code}"/>
+                <Button Content="Copy" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                        Click="CopyToClipboard_Click"/>
+            </Grid>
+
+        </Grid>
         <StackPanel Orientation="Horizontal" >
             <TextBlock Text="TableName："/>
-            <TextBox Width="100" Text="{Binding TableName}"/>
+            <TextBox MinWidth="100" Text="{Binding TableName}"/>
 
             <Button Content="Generate"
                     Click="Generate_Click"/>

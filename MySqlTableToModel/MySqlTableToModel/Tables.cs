@@ -37,6 +37,21 @@ namespace MySqlTableToModel
 
                 informationSchemas = informations;
             }
+
+            public void GetTableNames(string database, out List<string> tables)
+            {
+                tables = new List<string>();
+                string command = $@"SELECT table_name FROM information_schema.tables WHERE table_schema = '{database}';";
+                bool isOk = GetData(command, out var dataTable);
+
+                if (isOk)
+                {
+                    foreach (DataRow row in dataTable.Rows)
+                    {
+                        tables.Add((string)row[0]);
+                    }
+                }
+            }
         }
     }
 }

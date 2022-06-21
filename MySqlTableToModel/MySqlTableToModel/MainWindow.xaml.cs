@@ -1,10 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text;
 using System.Windows;
+using System.Windows.Input;
 
 namespace MySqlTableToModel
 {
+    class RelayCommand : ICommand
+    {
+        Action<object> _execute;
+        Func<object, bool> _canExecute;
+
+        public RelayCommand(Action<object> execute) : this(execute, (i) => true)
+        {
+        }
+
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute)
+        {
+            _execute = execute;
+            _canExecute = canExecute;
+        }
+
+        public event System.EventHandler CanExecuteChanged;
+
+        public bool CanExecute(object parameter) => _canExecute == null || _canExecute(parameter);
+
+        public void Execute(object parameter) => _execute(parameter);
+    }
     /// <summary>
     /// MainWindow.xaml 的互動邏輯
     /// </summary>
@@ -20,15 +44,31 @@ namespace MySqlTableToModel
             Init();
         }
 
+        public ICommand TableSelect => new RelayCommand((parameter) =>
+        {
+            TableName = parameter.ToString();
+        });
+
+        public ObservableCollection<string> TableNames { get; set; }
+
         private void Init()
         {
             var iniFile = new IniFile("../../../../Config/db.ini");
             var ip = iniFile.Read("ip", "database");
             var user = iniFile.Read("user", "database");
             var password = iniFile.Read("password", "database");
-            var table = iniFile.Read("table", "database");
+            var database = iniFile.Read("database", "database");
 
-            _sqlConnectBase = new Tables(ip, user, password, table);
+            _sqlConnectBase = new Tables(ip, user, password, database);
+
+            GetTables(database);
+        }
+
+        private void GetTables(string database)
+        {
+            _sqlConnectBase.GetTableNames(database, out var tables);
+
+            TableNames = new ObservableCollection<string>(tables);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -71,7 +111,7 @@ namespace MySqlTableToModel
             sb.AppendLine();
             sb.AppendLine($"namespace NAMESPACE");
             sb.AppendLine("{");
-            sb.AppendLine($"    class {className}");
+            sb.AppendLine($"    public class {className}");
             sb.AppendLine("    {");
             foreach (var information in informations)
             {
@@ -109,6 +149,11 @@ namespace MySqlTableToModel
         private void NotifyPropertyChange(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void CopyToClipboard_Click(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(Code);
         }
     }
 }
